@@ -82,7 +82,23 @@ function! s:CacheErrors()
     if filereadable(expand("%"))
         for ft in split(&ft, '\.')
             if s:Checkable(ft)
-                let b:syntastic_loclist = extend(b:syntastic_loclist, SyntaxCheckers_{ft}_GetLocList())
+
+                "using shellslash (windows only) and shellescape causes
+                "makeprg to malfunction
+                if exists("+shellslash")
+                    let old_shellslash = &shellslash
+                    set noshellslash
+                endif
+
+                try
+                    let b:syntastic_loclist = extend(b:syntastic_loclist, SyntaxCheckers_{ft}_GetLocList())
+                finally
+
+                    if exists("+shellslash")
+                        let &shellslash = old_shellslash
+                    endif
+
+                endtry
             endif
         endfor
     endif
